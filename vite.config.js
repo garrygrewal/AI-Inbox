@@ -11,6 +11,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      // Pin Apollo to this repo’s install (avoids stale absolute paths from old configs / caches).
+      "@xplortech/apollo-core/loader": path.join(apolloCorePath, "loader", "index.js"),
       // Apollo exports `./css/*` → `./build/*.css`; Vite 4 can fail to resolve that pattern for CSS.
       "@xplortech/apollo-core/apollo-styles.css": path.join(
         apolloCorePath,
