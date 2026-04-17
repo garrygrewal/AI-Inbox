@@ -1,0 +1,356 @@
+:root {
+  color-scheme: light;
+  --apollo-bg: #f6f4ff;
+  --apollo-surface: #ffffff;
+  --apollo-surface-muted: #fbfbfd;
+  --apollo-border: #e1e2e8;
+  --apollo-text: #202331;
+  --apollo-text-subdued: #6a6d7d;
+  --apollo-text-soft: #8f93a3;
+  --apollo-shadow-1: 0 4px 6px -1px rgba(48, 45, 59, 0.1);
+  --apollo-shadow-2: 0 2px 4px -1px rgba(48, 45, 59, 0.05);
+  --apollo-disabled-bg: #f3f4f6;
+  --apollo-disabled-icon: #9da2b4;
+  --apollo-brand: #6923f4;
+  --apollo-brand-soft: #efe8ff;
+  --apollo-radius: 8px;
+  --apollo-radius-pill: 9999px;
+  --apollo-font: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+}
+
+@property --composer-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--apollo-font);
+  background:
+    radial-gradient(circle at top left, rgba(105, 35, 244, 0.08), transparent 32%),
+    linear-gradient(180deg, #fcfbff 0%, #f7f7fb 100%);
+  color: var(--apollo-text);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 64px;
+}
+
+.prototype-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  width: min(817px, 100%);
+}
+
+.composer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.composer-disclaimer-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16px;
+}
+
+.composer-disclaimer {
+  margin: 0;
+  color: var(--apollo-text-subdued);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 180ms ease-out,
+    transform 220ms ease-out;
+}
+
+.composer-disclaimer--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.phase-segment-control {
+  display: inline-flex;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px;
+  border: 1px solid var(--apollo-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8px 18px rgba(48, 45, 59, 0.06);
+}
+
+.phase-segment-button {
+  min-width: 108px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--apollo-text-subdued);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.phase-segment-button--active {
+  background: var(--apollo-surface);
+  color: var(--apollo-text);
+  box-shadow: 0 2px 6px rgba(48, 45, 59, 0.08);
+}
+
+.composer-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 108px;
+  max-height: 240px;
+  padding: 16px;
+  border: 1px solid var(--apollo-border);
+  border-radius: var(--apollo-radius);
+  background: var(--apollo-surface);
+  box-shadow: var(--apollo-shadow-1), var(--apollo-shadow-2);
+  isolation: isolate;
+}
+
+.composer-shell--suggesting {
+  border-width: 1px;
+  border-color: transparent;
+  --composer-border-angle: 0deg;
+  background:
+    linear-gradient(var(--apollo-surface), var(--apollo-surface)) padding-box,
+    conic-gradient(
+      from var(--composer-border-angle),
+      var(--xpl-color-purple-800) 0deg,
+      var(--xpl-color-purple-700) 72deg,
+      var(--xpl-color-purple-100) 180deg,
+      var(--xpl-color-purple-700) 288deg,
+      var(--xpl-color-purple-800) 360deg
+    ) border-box;
+  background-clip:
+    padding-box,
+    border-box;
+  background-origin: border-box;
+  animation: composer-border-rotate 3s linear infinite;
+}
+
+.composer-message-area {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding-bottom: 8px;
+}
+
+.composer-shell--phase-2 .composer-message-area {
+  min-height: 48px;
+}
+
+.composer-scroll-frame {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  width: 100%;
+  min-height: 44px;
+}
+
+.composer-shell--phase-2 .composer-scroll-frame {
+  min-height: 48px;
+}
+
+.composer-loading-state {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.composer-shell--phase-2 .composer-loading-state {
+  height: 48px;
+  min-height: 48px;
+  overflow: hidden;
+}
+
+.composer-input-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.composer-input {
+  flex: 1 1 auto;
+  min-height: 44px;
+  max-height: 160px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--apollo-text-subdued);
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  outline: none;
+  caret-color: var(--apollo-brand);
+}
+
+.composer-shell--phase-2 .composer-input {
+  min-height: 48px;
+}
+
+.composer-input::placeholder {
+  color: var(--apollo-text-subdued);
+  opacity: 1;
+}
+
+.composer-input--filled {
+  color: var(--apollo-text);
+}
+
+.composer-input--scrollable {
+  overflow-y: auto;
+  padding-right: 0;
+  scrollbar-width: none;
+}
+
+.composer-input--scrollable::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.composer-scrollbar {
+  position: relative;
+  flex: 0 0 4px;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--apollo-border);
+}
+
+.composer-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--apollo-brand);
+  border-radius: 999px;
+  transition: transform 120ms linear;
+}
+
+.composer-actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.composer-actions xpl-button {
+  display: inline-flex;
+}
+
+.composer-suggest-button-shell {
+  display: inline-grid;
+  align-items: center;
+  justify-content: flex-start;
+  width: fit-content;
+  min-height: 32px;
+}
+
+.composer-suggest-button {
+  display: inline-flex;
+}
+
+.composer-suggest-button-layer {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  opacity: 0;
+  transform: translateY(3px);
+  pointer-events: none;
+  transition:
+    opacity 250ms ease,
+    transform 300ms ease;
+}
+
+.composer-suggest-button-layer--active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.composer-skeleton-line {
+  border-radius: 16px;
+}
+
+.composer-skeleton-line--secondary {
+  width: calc(100% - 28px);
+}
+
+@keyframes composer-border-rotate {
+  from {
+    --composer-border-angle: 0deg;
+  }
+
+  to {
+    --composer-border-angle: 360deg;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 28px 16px 40px;
+  }
+
+  .prototype-shell {
+    gap: 48px;
+  }
+
+  .phase-segment-control {
+    width: 100%;
+  }
+
+  .phase-segment-button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
