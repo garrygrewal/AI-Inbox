@@ -71,6 +71,42 @@ textarea {
   width: 100%;
 }
 
+.composer-card {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--apollo-border);
+  border-radius: var(--apollo-radius);
+  background: var(--apollo-surface);
+  box-shadow: var(--apollo-shadow-1), var(--apollo-shadow-2);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Let Apollo tooltips escape the card (absolute positioning + hover visibility) */
+.composer-card.composer-card--phase-3 {
+  overflow: visible;
+}
+
+.composer-card--suggesting {
+  border-color: transparent;
+  --composer-border-angle: 0deg;
+  background:
+    linear-gradient(var(--apollo-surface), var(--apollo-surface)) padding-box,
+    conic-gradient(
+      from var(--composer-border-angle),
+      var(--xpl-color-purple-800) 0deg,
+      var(--xpl-color-purple-700) 72deg,
+      var(--xpl-color-purple-100) 180deg,
+      var(--xpl-color-purple-700) 288deg,
+      var(--xpl-color-purple-800) 360deg
+    ) border-box;
+  background-clip:
+    padding-box,
+    border-box;
+  background-origin: border-box;
+  animation: composer-border-rotate 3s linear infinite;
+}
+
 .composer-disclaimer-slot {
   display: flex;
   align-items: center;
@@ -131,7 +167,6 @@ textarea {
 }
 
 .composer-shell {
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -139,32 +174,222 @@ textarea {
   min-height: 108px;
   max-height: 240px;
   padding: 16px;
-  border: 1px solid var(--apollo-border);
-  border-radius: var(--apollo-radius);
-  background: var(--apollo-surface);
-  box-shadow: var(--apollo-shadow-1), var(--apollo-shadow-2);
-  isolation: isolate;
+  background: transparent;
+  transition:
+    min-height 240ms ease,
+    max-height 240ms ease;
 }
 
-.composer-shell--suggesting {
-  border-width: 1px;
-  border-color: transparent;
-  --composer-border-angle: 0deg;
-  background:
-    linear-gradient(var(--apollo-surface), var(--apollo-surface)) padding-box,
-    conic-gradient(
-      from var(--composer-border-angle),
-      var(--xpl-color-purple-800) 0deg,
-      var(--xpl-color-purple-700) 72deg,
-      var(--xpl-color-purple-100) 180deg,
-      var(--xpl-color-purple-700) 288deg,
-      var(--xpl-color-purple-800) 360deg
-    ) border-box;
-  background-clip:
-    padding-box,
-    border-box;
-  background-origin: border-box;
-  animation: composer-border-rotate 3s linear infinite;
+.composer-shell--phase-3 {
+  min-height: 108px;
+}
+
+.composer-shell--phase-3.composer-shell--auto-reply-thinking {
+  min-height: 156px;
+  max-height: 288px;
+  padding-top: 12px;
+}
+
+.composer-phase-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-top-left-radius: calc(var(--apollo-radius) - 1px);
+  border-top-right-radius: calc(var(--apollo-radius) - 1px);
+  border-bottom: 1px solid var(--apollo-border);
+  background: var(--xpl-color-gray-50);
+  background-clip: padding-box;
+}
+
+.composer-phase-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--apollo-text-subdued);
+}
+
+.composer-phase-header-title {
+  color: var(--apollo-text);
+}
+
+/*
+ * top-right anchors the bubble’s left edge to the trigger; on a ~16px icon the panel reads
+ * shifted right. Nudge the body left (~½ Apollo max-width) so it sits over the icon; keep
+ * the arrow near the icon center (left offset from trigger’s left edge).
+ */
+.composer-phase-header-info xpl-tooltip.composer-phase-header-tooltip {
+  --tooltip-body-horizontal-offset: -92px;
+  --tooltip-arrow-offset: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.composer-phase-header-info xpl-tooltip.composer-phase-header-tooltip xpl-icon {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.composer-phase-toggle-align {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* Apollo xpl-toggle field styles (margin-bottom, flex-wrap, input top) break a 40px header row */
+.composer-phase-toggle-align xpl-toggle.xpl-toggle-container,
+.composer-phase-toggle-align xpl-toggle {
+  margin-bottom: 0 !important;
+  height: 100%;
+  max-height: 100%;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  line-height: 0;
+}
+
+.composer-phase-toggle-align xpl-toggle .xpl-toggle {
+  top: 0 !important;
+}
+
+.composer-body-stack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 44px;
+  gap: 0;
+  transition: gap 240ms ease;
+}
+
+.composer-body-stack--with-banner {
+  gap: 12px;
+}
+
+.composer-ai-banner-slot {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    max-height 240ms ease,
+    opacity 180ms ease;
+}
+
+.composer-ai-banner-slot--visible {
+  max-height: 40px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.composer-ai-banner-clip {
+  overflow: hidden;
+}
+
+.composer-ai-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+  border-radius: var(--apollo-radius);
+  background: var(--xpl-color-purple-50);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 220ms ease,
+    transform 240ms ease;
+}
+
+.composer-ai-banner-slot--visible .composer-ai-banner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.composer-ai-banner-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.composer-ai-banner-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.composer-ai-banner-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.composer-ai-banner-status--transitioning {
+  animation: composer-ai-banner-swap 220ms ease-out;
+}
+
+.composer-ai-banner-label-stack {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 20px;
+}
+
+.composer-ai-banner-label-stack--transitioning {
+  width: max-content;
+}
+
+.composer-ai-banner-label {
+  color: var(--apollo-text);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.composer-ai-banner-label--outgoing,
+.composer-ai-banner-label--incoming {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.composer-ai-banner-label--outgoing {
+  animation: composer-ai-banner-text-out 220ms ease-out forwards;
+}
+
+.composer-ai-banner-label--incoming {
+  animation: composer-ai-banner-text-in 220ms ease-out forwards;
+}
+
+.composer-ai-banner-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--apollo-text);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.composer-ai-banner-close xpl-icon {
+  display: block;
 }
 
 .composer-message-area {
@@ -333,6 +558,42 @@ textarea {
 
   to {
     --composer-border-angle: 360deg;
+  }
+}
+
+@keyframes composer-ai-banner-swap {
+  from {
+    opacity: 0.35;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes composer-ai-banner-text-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes composer-ai-banner-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

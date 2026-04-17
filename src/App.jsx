@@ -7,13 +7,22 @@ const SEND_BUTTON_HEIGHT = 40;
 const MAX_TEXTAREA_HEIGHT =
   MAX_COMPOSER_HEIGHT - COMPOSER_VERTICAL_PADDING - MESSAGE_BOTTOM_PADDING - SEND_BUTTON_HEIGHT;
 const MIN_SCROLL_THUMB_HEIGHT = 24;
+const AUTO_REPLY_THINKING_DURATION = 4000;
+const AUTO_REPLY_SENDING_DURATION = 4000;
+const AUTO_REPLY_BANNER_TRANSITION_DURATION = 220;
 const SUGGESTED_MESSAGE =
   "Lorem consequat occaecat aute eu exercitation voluptate qui eu mollit est eiusmod enim velit reprehenderit excepteur";
+const AUTO_REPLY_BANNER_ICON =
+  "https://www.figma.com/api/mcp/asset/bb3a31a7-4230-4e27-a23e-d5bb80e82941";
 const PHASE_OPTIONS = [
   { id: "phase-1", label: "Phase 1" },
   { id: "phase-2", label: "Phase 2" },
   { id: "phase-3", label: "Phase 3" },
 ];
+
+function getAutoReplyBannerLabel(status) {
+  return status === "sending" ? "AI is sending a reply..." : "AI is thinking...";
+}
 
 function MessageComposer({
   placeholder = "Type your message...",
@@ -21,6 +30,10 @@ function MessageComposer({
 }) {
   const [value, setValue] = useState("");
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isAutoReplyEnabled, setIsAutoReplyEnabled] = useState(false);
+  const [autoReplyStatus, setAutoReplyStatus] = useState("idle");
+  const [isAutoReplyBannerTransitioning, setIsAutoReplyBannerTransitioning] = useState(false);
+  const [previousAutoReplyBannerLabel, setPreviousAutoReplyBannerLabel] = useState("");
   const [hasGeneratedSuggestion, setHasGeneratedSuggestion] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const [scrollThumbStyle, setScrollThumbStyle] = useState({
@@ -29,9 +42,16 @@ function MessageComposer({
   });
   const textareaRef = useRef(null);
   const suggestionTimeoutRef = useRef(null);
+  const autoReplyThinkingTimeoutRef = useRef(null);
+  const autoReplySendingTimeoutRef = useRef(null);
+  const autoReplyBannerTransitionTimeoutRef = useRef(null);
   const previousValueRef = useRef("");
   const previousGeneratedSuggestionRef = useRef(false);
+  const previousAutoReplyStatusRef = useRef("idle");
+  const isPhaseThree = phase === "phase-3";
   const showSuggestAction = phase === "phase-2" || phase === "phase-3";
+  const showAutoReplyBanner = isPhaseThree && autoReplyStatus !== "idle";
+  const autoReplyBannerLabel = getAutoReplyBannerLabel(autoReplyStatus);
   const showDisclaimer = showSuggestAction && hasGeneratedSuggestion && !isSuggesting;
   const isSendDisabled = isSuggesting || value.length < 1;
 
@@ -79,6 +99,17 @@ function MessageComposer({
     setHasGeneratedSuggestion(false);
   };
 
+  const cancelSuggestMessageFlow = () => {
+    if (suggestionTimeoutRef.current) {
+      window.clearTimeout(suggestionTimeoutRef.current);
+      suggestionTimeoutRef.current = null;
+    }
+
+    setValue(previousValueRef.current);
+    setHasGeneratedSuggestion(previousGeneratedSuggestionRef.current);
+    setIsSuggesting(false);
+  };
+
   const handleSuggestMessage = () => {
     if (isSuggesting) return;
 
@@ -86,6 +117,7 @@ function MessageComposer({
       window.clearTimeout(suggestionTimeoutRef.current);
     }
 
+    resetAutoReplyFlow();
     blurActiveElement();
     previousValueRef.current = value;
     previousGeneratedSuggestionRef.current = hasGeneratedSuggestion;
@@ -104,15 +136,82 @@ function MessageComposer({
   const handleCancelSuggestion = () => {
     if (!isSuggesting) return;
 
-    if (suggestionTimeoutRef.current) {
-      window.clearTimeout(suggestionTimeoutRef.current);
-      suggestionTimeoutRef.current = null;
+    blurActiveElement();
+    cancelSuggestMessageFlow();
+  };
+
+  const clearAutoReplyThinkingTimeout = () => {
+    if (autoReplyThinkingTimeoutRef.current) {
+      window.clearTimeout(autoReplyThinkingTimeoutRef.current);
+      autoReplyThinkingTimeoutRef.current = null;
+    }
+  };
+
+  const clearAutoReplySendingTimeout = () => {
+    if (autoReplySendingTimeoutRef.current) {
+      window.clearTimeout(autoReplySendingTimeoutRef.current);
+      autoReplySendingTimeoutRef.current = null;
+    }
+  };
+
+  const clearAutoReplyBannerTransitionTimeout = () => {
+    if (autoReplyBannerTransitionTimeoutRef.current) {
+      window.clearTimeout(autoReplyBannerTransitionTimeoutRef.current);
+      autoReplyBannerTransitionTimeoutRef.current = null;
+    }
+  };
+
+  const resetAutoReplyFlow = () => {
+    clearAutoReplyThinkingTimeout();
+    clearAutoReplySendingTimeout();
+    clearAutoReplyBannerTransitionTimeout();
+    setIsAutoReplyEnabled(false);
+    setAutoReplyStatus("idle");
+    setIsAutoReplyBannerTransitioning(false);
+    setPreviousAutoReplyBannerLabel("");
+  };
+
+  const handleAutoReplyToggle = () => {
+    blurActiveElement();
+
+    if (isAutoReplyEnabled) {
+      resetAutoReplyFlow();
+      return;
     }
 
+    if (isSuggesting) {
+      cancelSuggestMessageFlow();
+    }
+
+    clearAutoReplyThinkingTimeout();
+    clearAutoReplySendingTimeout();
+    setIsAutoReplyEnabled(true);
+    setAutoReplyStatus("thinking");
+    setIsAutoReplyBannerTransitioning(false);
+
+    autoReplyThinkingTimeoutRef.current = window.setTimeout(() => {
+      setAutoReplyStatus("sending");
+      autoReplyThinkingTimeoutRef.current = null;
+    }, AUTO_REPLY_THINKING_DURATION);
+
+    autoReplySendingTimeoutRef.current = window.setTimeout(() => {
+      resetAutoReplyFlow();
+    }, AUTO_REPLY_THINKING_DURATION + AUTO_REPLY_SENDING_DURATION);
+  };
+
+  const handleDismissAutoReplyBanner = () => {
+    if (!showAutoReplyBanner) return;
+
     blurActiveElement();
-    setValue(previousValueRef.current);
-    setHasGeneratedSuggestion(previousGeneratedSuggestionRef.current);
-    setIsSuggesting(false);
+    resetAutoReplyFlow();
+  };
+
+  const handleInputChange = (event) => {
+    if (isPhaseThree && isAutoReplyEnabled) {
+      resetAutoReplyFlow();
+    }
+
+    setValue(event.target.value);
   };
 
   useEffect(() => {
@@ -133,9 +232,46 @@ function MessageComposer({
   }, []);
 
   useEffect(() => {
+    const previousStatus = previousAutoReplyStatusRef.current;
+
+    if (
+      previousStatus !== autoReplyStatus &&
+      previousStatus !== "idle" &&
+      autoReplyStatus !== "idle"
+    ) {
+      setPreviousAutoReplyBannerLabel(getAutoReplyBannerLabel(previousStatus));
+      setIsAutoReplyBannerTransitioning(true);
+      clearAutoReplyBannerTransitionTimeout();
+      autoReplyBannerTransitionTimeoutRef.current = window.setTimeout(() => {
+        setIsAutoReplyBannerTransitioning(false);
+        setPreviousAutoReplyBannerLabel("");
+        autoReplyBannerTransitionTimeoutRef.current = null;
+      }, AUTO_REPLY_BANNER_TRANSITION_DURATION);
+    } else if (autoReplyStatus === "idle") {
+      setIsAutoReplyBannerTransitioning(false);
+      setPreviousAutoReplyBannerLabel("");
+      clearAutoReplyBannerTransitionTimeout();
+    }
+
+    previousAutoReplyStatusRef.current = autoReplyStatus;
+  }, [autoReplyStatus]);
+
+  useEffect(() => {
     return () => {
       if (suggestionTimeoutRef.current) {
         window.clearTimeout(suggestionTimeoutRef.current);
+      }
+
+      if (autoReplyThinkingTimeoutRef.current) {
+        window.clearTimeout(autoReplyThinkingTimeoutRef.current);
+      }
+
+      if (autoReplySendingTimeoutRef.current) {
+        window.clearTimeout(autoReplySendingTimeoutRef.current);
+      }
+
+      if (autoReplyBannerTransitionTimeoutRef.current) {
+        window.clearTimeout(autoReplyBannerTransitionTimeoutRef.current);
       }
     };
   }, []);
@@ -149,107 +285,183 @@ function MessageComposer({
           AI can make mistakes. Review before sending.
         </p>
       </div>
-      <form
-        className={`composer-shell${showSuggestAction ? " composer-shell--phase-2" : ""}${isSuggesting ? " composer-shell--suggesting" : ""}`}
-        aria-label="Message composer preview"
-        onSubmit={handleSubmit}
+      <div
+        className={`composer-card${isSuggesting ? " composer-card--suggesting" : ""}${isPhaseThree ? " composer-card--phase-3" : ""}`}
       >
-        <div className="composer-message-area">
-          {isSuggesting ? (
+        {isPhaseThree ? (
+          <div className="composer-phase-header">
+            <div className="composer-phase-header-info">
+              <xpl-tooltip
+                className="composer-phase-header-tooltip"
+                text="Allow AI to automatically reply to eligible incoming messages."
+                position="top-right"
+              >
+                <xpl-icon
+                  icon="circle-info"
+                  size="16"
+                  aria-label="About AI auto-reply"
+                ></xpl-icon>
+              </xpl-tooltip>
+              <span className="composer-phase-header-title xpl-text-title-5">AI auto-reply</span>
+            </div>
+            <div className="composer-phase-toggle-align">
+              <xpl-toggle
+                key={isAutoReplyEnabled ? "ai-auto-reply-on" : "ai-auto-reply-off"}
+                className="composer-phase-toggle"
+                name="ai-auto-reply"
+                checked={isAutoReplyEnabled ? true : undefined}
+                onClick={handleAutoReplyToggle}
+              ></xpl-toggle>
+            </div>
+          </div>
+        ) : null}
+        <form
+          className={`composer-shell${showSuggestAction ? " composer-shell--phase-2" : ""}${isPhaseThree ? " composer-shell--phase-3" : ""}${showAutoReplyBanner ? " composer-shell--auto-reply-thinking" : ""}`}
+          aria-label="Message composer preview"
+          onSubmit={handleSubmit}
+        >
+          <div className={`composer-body-stack${showAutoReplyBanner ? " composer-body-stack--with-banner" : ""}`}>
             <div
-              className="composer-loading-state"
-              aria-live="polite"
-              aria-busy="true"
-              aria-label="Generating suggested message"
+              className={`composer-ai-banner-slot${showAutoReplyBanner ? " composer-ai-banner-slot--visible" : ""}`}
+              aria-hidden={showAutoReplyBanner ? undefined : true}
             >
-              <xpl-skeleton
-                class-names="composer-skeleton-line"
-                height="20px"
-                width="100%"
-              ></xpl-skeleton>
-              <xpl-skeleton
-                class-names="composer-skeleton-line composer-skeleton-line--secondary"
-                height="20px"
-                width="100%"
-              ></xpl-skeleton>
-            </div>
-          ) : (
-            <>
-              <label className="composer-input-label" htmlFor="message-composer-input">
-                Message
-              </label>
-              <div className="composer-scroll-frame">
-                <textarea
-                  id="message-composer-input"
-                  ref={textareaRef}
-                  className={`composer-input${value ? " composer-input--filled" : ""}${isScrollable ? " composer-input--scrollable" : ""}`}
-                  placeholder={placeholder}
-                  rows="1"
-                  value={value}
-                  onChange={(event) => setValue(event.target.value)}
-                  onScroll={updateScrollState}
-                />
-                {isScrollable ? (
-                  <div className="composer-scrollbar" aria-hidden="true">
-                    <div
-                      className="composer-scrollbar-thumb"
-                      style={scrollThumbStyle}
+              <div className="composer-ai-banner-clip">
+                <div
+                  className="composer-ai-banner"
+                  aria-live={showAutoReplyBanner ? "polite" : undefined}
+                  role={showAutoReplyBanner ? "status" : undefined}
+                >
+                  <div className="composer-ai-banner-copy">
+                    <img
+                      className="composer-ai-banner-icon"
+                      src={AUTO_REPLY_BANNER_ICON}
+                      alt=""
                     />
+                    <span
+                      className={`composer-ai-banner-label-stack${isAutoReplyBannerTransitioning ? " composer-ai-banner-label-stack--transitioning" : ""}`}
+                    >
+                      {isAutoReplyBannerTransitioning && previousAutoReplyBannerLabel ? (
+                        <span className="composer-ai-banner-label composer-ai-banner-label--outgoing">
+                          {previousAutoReplyBannerLabel}
+                        </span>
+                      ) : null}
+                      <span
+                        className={`composer-ai-banner-label${isAutoReplyBannerTransitioning ? " composer-ai-banner-label--incoming" : ""}`}
+                      >
+                        {autoReplyBannerLabel}
+                      </span>
+                    </span>
                   </div>
-                ) : null}
-              </div>
-            </>
-          )}
-        </div>
-        <div className="composer-actions">
-          {showSuggestAction ? (
-            <div className="composer-suggest-button-shell">
-              <div
-                className={`composer-suggest-button-layer${isSuggesting ? "" : " composer-suggest-button-layer--active"}`}
-              >
-                <xpl-button
-                  className="composer-suggest-button"
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  aria-label="Suggest message"
-                  onClick={handleSuggestMessage}
-                >
-                  <xpl-icon icon="add-magic" size="16"></xpl-icon>
-                  Suggest Message
-                </xpl-button>
-              </div>
-              <div
-                className={`composer-suggest-button-layer${isSuggesting ? " composer-suggest-button-layer--active" : ""}`}
-              >
-                <xpl-button
-                  className="composer-suggest-button"
-                  type="button"
-                  variant="secondary"
-                  state="neutral"
-                  size="sm"
-                  aria-label="Cancel suggestion"
-                  onClick={handleCancelSuggestion}
-                >
-                  Cancel
-                </xpl-button>
+                  <button
+                    type="button"
+                    className="composer-ai-banner-close"
+                    aria-label="Cancel AI thinking"
+                    onClick={handleDismissAutoReplyBanner}
+                    tabIndex={showAutoReplyBanner ? 0 : -1}
+                  >
+                    <xpl-icon icon="x" size="16"></xpl-icon>
+                  </button>
+                </div>
               </div>
             </div>
-          ) : (
-            <span />
-          )}
-          <xpl-button
-            type="submit"
-            variant="primary"
-            state="neutral"
-            icon-only=""
-            disabled={isSendDisabled ? true : undefined}
-            aria-label="Send message"
-          >
-            <xpl-icon icon="arrow-up" size="20"></xpl-icon>
-          </xpl-button>
-        </div>
-      </form>
+            <div className="composer-message-area">
+              {isSuggesting ? (
+                <div
+                  className="composer-loading-state"
+                  aria-live="polite"
+                  aria-busy="true"
+                  aria-label="Generating suggested message"
+                >
+                  <xpl-skeleton
+                    class-names="composer-skeleton-line"
+                    height="20px"
+                    width="100%"
+                  ></xpl-skeleton>
+                  <xpl-skeleton
+                    class-names="composer-skeleton-line composer-skeleton-line--secondary"
+                    height="20px"
+                    width="100%"
+                  ></xpl-skeleton>
+                </div>
+              ) : (
+                <>
+                  <label className="composer-input-label" htmlFor="message-composer-input">
+                    Message
+                  </label>
+                  <div className="composer-scroll-frame">
+                    <textarea
+                      id="message-composer-input"
+                      ref={textareaRef}
+                    className={`composer-input${value ? " composer-input--filled" : ""}${isScrollable ? " composer-input--scrollable" : ""}`}
+                    placeholder={placeholder}
+                    rows="1"
+                    value={value}
+                    onChange={handleInputChange}
+                    onScroll={updateScrollState}
+                  />
+                    {isScrollable ? (
+                      <div className="composer-scrollbar" aria-hidden="true">
+                        <div
+                          className="composer-scrollbar-thumb"
+                          style={scrollThumbStyle}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="composer-actions">
+            {showSuggestAction ? (
+              <div className="composer-suggest-button-shell">
+                <div
+                  className={`composer-suggest-button-layer${isSuggesting ? "" : " composer-suggest-button-layer--active"}`}
+                >
+                  <xpl-button
+                    className="composer-suggest-button"
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Suggest message"
+                    onClick={handleSuggestMessage}
+                  >
+                    <xpl-icon icon="add-magic" size="16"></xpl-icon>
+                    Suggest Message
+                  </xpl-button>
+                </div>
+                <div
+                  className={`composer-suggest-button-layer${isSuggesting ? " composer-suggest-button-layer--active" : ""}`}
+                >
+                  <xpl-button
+                    className="composer-suggest-button"
+                    type="button"
+                    variant="secondary"
+                    state="neutral"
+                    size="sm"
+                    aria-label="Cancel suggestion"
+                    onClick={handleCancelSuggestion}
+                  >
+                    Cancel
+                  </xpl-button>
+                </div>
+              </div>
+            ) : (
+              <span />
+            )}
+            <xpl-button
+              type="submit"
+              variant="primary"
+              state="neutral"
+              icon-only=""
+              disabled={isSendDisabled ? true : undefined}
+              aria-label="Send message"
+            >
+              <xpl-icon icon="arrow-up" size="20"></xpl-icon>
+            </xpl-button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
