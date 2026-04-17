@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { defineCustomElements } from "apollo-core-local/loader";
+import { defineCustomElements } from "@xplortech/apollo-core/loader";
 import App from "./App";
-import "apollo-core-local/build/style.css";
+import "@xplortech/apollo-core/apollo-styles.css";
 import "./styles.css";
 
 defineCustomElements();
