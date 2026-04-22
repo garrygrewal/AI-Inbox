@@ -18,6 +18,10 @@ const SENT_MESSAGE_SAMPLE =
   "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
 const AUTO_REPLY_BANNER_ICON =
   "https://www.figma.com/api/mcp/asset/bb3a31a7-4230-4e27-a23e-d5bb80e82941";
+const SUGGESTION_FEEDBACK_THUMBS_UP_ICON =
+  "https://www.figma.com/api/mcp/asset/b9101bca-8c47-48d5-8d7d-be069f116a4e";
+const SUGGESTION_FEEDBACK_THUMBS_DOWN_ICON =
+  "https://www.figma.com/api/mcp/asset/ef45e002-507c-4480-add7-6407a8a506b5";
 const PHASE_OPTIONS = [
   { id: "phase-1", label: "Phase 1" },
   { id: "phase-2", label: "Phase 2" },
@@ -104,7 +108,7 @@ function MessageComposer({
   const showSuggestAction = phase === "phase-2" || phase === "phase-3";
   const showAutoReplyBanner = isPhaseThree && autoReplyStatus !== "idle";
   const autoReplyBannerLabel = getAutoReplyBannerLabel(autoReplyStatus);
-  const showDisclaimer = showSuggestAction && hasGeneratedSuggestion && !isSuggesting;
+  const showSuggestionFeedback = showSuggestAction && hasGeneratedSuggestion && !isSuggesting;
   const isSendDisabled = isSuggesting || value.length < 1;
 
   const blurActiveElement = () => {
@@ -330,12 +334,40 @@ function MessageComposer({
 
   return (
     <div className="composer-stack">
-      <div className="composer-disclaimer-slot" aria-live="polite">
-        <p
-          className={`composer-disclaimer${showDisclaimer ? " composer-disclaimer--visible" : ""}`}
+      <div className="composer-suggestion-feedback-slot" aria-live="polite">
+        <div
+          className={`composer-suggestion-feedback${showSuggestionFeedback ? " composer-suggestion-feedback--visible" : ""}`}
         >
-          AI can make mistakes. Review before sending.
-        </p>
+          <p className="composer-suggestion-feedback-label">
+            Was this suggested message helpful?
+          </p>
+          <div className="composer-suggestion-feedback-actions" role="group" aria-label="Suggested message feedback">
+            <button
+              type="button"
+              className="composer-suggestion-feedback-button"
+              aria-label="Thumbs up suggested message"
+              tabIndex={showSuggestionFeedback ? 0 : -1}
+            >
+              <img
+                className="composer-suggestion-feedback-icon"
+                src={SUGGESTION_FEEDBACK_THUMBS_UP_ICON}
+                alt=""
+              />
+            </button>
+            <button
+              type="button"
+              className="composer-suggestion-feedback-button"
+              aria-label="Thumbs down suggested message"
+              tabIndex={showSuggestionFeedback ? 0 : -1}
+            >
+              <img
+                className="composer-suggestion-feedback-icon"
+                src={SUGGESTION_FEEDBACK_THUMBS_DOWN_ICON}
+                alt=""
+              />
+            </button>
+          </div>
+        </div>
       </div>
       <div
         className={`composer-ai-banner-slot${showAutoReplyBanner ? " composer-ai-banner-slot--visible" : ""}`}

@@ -57,7 +57,7 @@ textarea {
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 48px 24px 64px;
+  padding: 48px 24px 12px;
 }
 
 .app-spec-title {
@@ -78,7 +78,7 @@ textarea {
   margin: 0;
   margin-top: auto;
   align-self: flex-end;
-  padding-top: 48px;
+  padding-top: 24px;
   max-width: min(240px, calc(100vw - 32px));
   font-size: 11px;
   font-weight: 500;
@@ -95,6 +95,7 @@ textarea {
   gap: 128px;
   width: 100%;
   padding-top: 80px;
+  padding-bottom: 56px;
 }
 
 .chat-message-prototype {
@@ -235,19 +236,18 @@ textarea {
   animation: composer-border-rotate 3s linear infinite;
 }
 
-.composer-disclaimer-slot {
+.composer-suggestion-feedback-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 16px;
+  min-height: 24px;
 }
 
-.composer-disclaimer {
-  margin: 0;
-  color: var(--apollo-text-subdued);
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
+.composer-suggestion-feedback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   opacity: 0;
   transform: translateY(6px);
   transition:
@@ -255,9 +255,42 @@ textarea {
     transform 220ms ease-out;
 }
 
-.composer-disclaimer--visible {
+.composer-suggestion-feedback--visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.composer-suggestion-feedback-label {
+  margin: 0;
+  color: var(--apollo-text-subdued);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.composer-suggestion-feedback-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.composer-suggestion-feedback-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--apollo-radius-pill);
+  background: transparent;
+  cursor: pointer;
+}
+
+.composer-suggestion-feedback-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .phase-segment-control {
@@ -423,14 +456,30 @@ textarea {
   justify-content: space-between;
   width: 100%;
   padding: 8px 16px;
+  border: 1px solid transparent;
   border-radius: var(--apollo-radius);
-  background: #f4f2ff;
+  --composer-border-angle: 0deg;
+  background:
+    linear-gradient(#f4f2ff, #f4f2ff) padding-box,
+    conic-gradient(
+      from var(--composer-border-angle),
+      var(--xpl-color-purple-800) 0deg,
+      var(--xpl-color-purple-700) 72deg,
+      var(--xpl-color-purple-100) 180deg,
+      var(--xpl-color-purple-700) 288deg,
+      var(--xpl-color-purple-800) 360deg
+    ) border-box;
+  background-clip:
+    padding-box,
+    border-box;
+  background-origin: border-box;
   box-shadow: var(--apollo-card-shadow);
   opacity: 0;
   transform: translateY(-8px);
   transition:
     opacity 220ms ease,
     transform 240ms ease;
+  animation: composer-border-rotate 3s linear infinite;
 }
 
 .composer-ai-banner-slot--visible .composer-ai-banner {
@@ -713,9 +762,16 @@ textarea {
   }
 }
 
+@media (min-width: 641px) {
+  .app-shell {
+    min-height: unset;
+    padding-bottom: 8px;
+  }
+}
+
 @media (max-width: 640px) {
   .app-shell {
-    padding: 28px 16px 40px;
+    padding: 28px 16px 16px;
   }
 
   .prototype-shell {
