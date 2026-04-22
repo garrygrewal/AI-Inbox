@@ -12,6 +12,10 @@ const AUTO_REPLY_SENDING_DURATION = 4000;
 const AUTO_REPLY_BANNER_TRANSITION_DURATION = 220;
 const SUGGESTED_MESSAGE =
   "Lorem consequat occaecat aute eu exercitation voluptate qui eu mollit est eiusmod enim velit reprehenderit excepteur";
+const RECEIVED_MESSAGE_SAMPLE =
+  "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
+const SENT_MESSAGE_SAMPLE =
+  "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
 const AUTO_REPLY_BANNER_ICON =
   "https://www.figma.com/api/mcp/asset/bb3a31a7-4230-4e27-a23e-d5bb80e82941";
 const PHASE_OPTIONS = [
@@ -19,6 +23,54 @@ const PHASE_OPTIONS = [
   { id: "phase-2", label: "Phase 2" },
   { id: "phase-3", label: "Phase 3" },
 ];
+
+function PhaseSegmentControl({ value, onChange, ariaLabel }) {
+  return (
+    <div className="phase-segment-control" role="tablist" aria-label={ariaLabel}>
+      {PHASE_OPTIONS.map((phase) => {
+        const isActive = phase.id === value;
+        return (
+          <button
+            key={phase.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={`phase-segment-button${isActive ? " phase-segment-button--active" : ""}`}
+            onClick={() => onChange(phase.id)}
+          >
+            {phase.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChatMessagePrototype({ phase }) {
+  return (
+    <div
+      className="chat-message-prototype"
+      aria-label={`Chat message prototype ${PHASE_OPTIONS.find((p) => p.id === phase)?.label ?? phase}`}
+    >
+      <div className="chat-message-thread">
+        <div className="chat-message chat-message--received">
+          <div className="chat-message-bubble chat-message-bubble--received">
+            <p className="chat-message-text">{RECEIVED_MESSAGE_SAMPLE}</p>
+          </div>
+          <p className="chat-message-timestamp">9:41 AM</p>
+        </div>
+        <div className="chat-message chat-message--sent">
+          <div className="chat-message-bubble chat-message-bubble--sent">
+            <p className="chat-message-text chat-message-text--inverse">{SENT_MESSAGE_SAMPLE}</p>
+          </div>
+          <p className="chat-message-timestamp chat-message-timestamp--sent">
+            Delivered • Sent by Garry • 10:12 AM
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function getAutoReplyBannerLabel(status) {
   return status === "sending" ? "AI is sending a reply..." : "AI is thinking...";
@@ -199,7 +251,7 @@ function MessageComposer({
     }, AUTO_REPLY_THINKING_DURATION + AUTO_REPLY_SENDING_DURATION);
   };
 
-  const handleDismissAutoReplyBanner = () => {
+  const handleTakeOver = () => {
     if (!showAutoReplyBanner) return;
 
     blurActiveElement();
@@ -286,6 +338,49 @@ function MessageComposer({
         </p>
       </div>
       <div
+        className={`composer-ai-banner-slot${showAutoReplyBanner ? " composer-ai-banner-slot--visible" : ""}`}
+        aria-hidden={showAutoReplyBanner ? undefined : true}
+      >
+        <div className="composer-ai-banner-clip">
+          <div
+            className="composer-ai-banner"
+            aria-live={showAutoReplyBanner ? "polite" : undefined}
+            role={showAutoReplyBanner ? "status" : undefined}
+          >
+            <div className="composer-ai-banner-copy">
+              <img
+                className="composer-ai-banner-icon"
+                src={AUTO_REPLY_BANNER_ICON}
+                alt=""
+              />
+              <span
+                className={`composer-ai-banner-label-stack${isAutoReplyBannerTransitioning ? " composer-ai-banner-label-stack--transitioning" : ""}`}
+              >
+                {isAutoReplyBannerTransitioning && previousAutoReplyBannerLabel ? (
+                  <span className="composer-ai-banner-label composer-ai-banner-label--outgoing">
+                    {previousAutoReplyBannerLabel}
+                  </span>
+                ) : null}
+                <span
+                  className={`composer-ai-banner-label${isAutoReplyBannerTransitioning ? " composer-ai-banner-label--incoming" : ""}`}
+                >
+                  {autoReplyBannerLabel}
+                </span>
+              </span>
+            </div>
+            <button
+              type="button"
+              className="composer-ai-banner-takeover"
+              aria-label="Take over and stop AI auto-reply"
+              onClick={handleTakeOver}
+              tabIndex={showAutoReplyBanner ? 0 : -1}
+            >
+              Take over
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
         className={`composer-card${isSuggesting ? " composer-card--suggesting" : ""}${isPhaseThree ? " composer-card--phase-3" : ""}`}
       >
         {isPhaseThree ? (
@@ -316,54 +411,11 @@ function MessageComposer({
           </div>
         ) : null}
         <form
-          className={`composer-shell${showSuggestAction ? " composer-shell--phase-2" : ""}${isPhaseThree ? " composer-shell--phase-3" : ""}${showAutoReplyBanner ? " composer-shell--auto-reply-thinking" : ""}`}
+          className={`composer-shell${showSuggestAction ? " composer-shell--phase-2" : ""}${isPhaseThree ? " composer-shell--phase-3" : ""}`}
           aria-label="Message composer preview"
           onSubmit={handleSubmit}
         >
-          <div className={`composer-body-stack${showAutoReplyBanner ? " composer-body-stack--with-banner" : ""}`}>
-            <div
-              className={`composer-ai-banner-slot${showAutoReplyBanner ? " composer-ai-banner-slot--visible" : ""}`}
-              aria-hidden={showAutoReplyBanner ? undefined : true}
-            >
-              <div className="composer-ai-banner-clip">
-                <div
-                  className="composer-ai-banner"
-                  aria-live={showAutoReplyBanner ? "polite" : undefined}
-                  role={showAutoReplyBanner ? "status" : undefined}
-                >
-                  <div className="composer-ai-banner-copy">
-                    <img
-                      className="composer-ai-banner-icon"
-                      src={AUTO_REPLY_BANNER_ICON}
-                      alt=""
-                    />
-                    <span
-                      className={`composer-ai-banner-label-stack${isAutoReplyBannerTransitioning ? " composer-ai-banner-label-stack--transitioning" : ""}`}
-                    >
-                      {isAutoReplyBannerTransitioning && previousAutoReplyBannerLabel ? (
-                        <span className="composer-ai-banner-label composer-ai-banner-label--outgoing">
-                          {previousAutoReplyBannerLabel}
-                        </span>
-                      ) : null}
-                      <span
-                        className={`composer-ai-banner-label${isAutoReplyBannerTransitioning ? " composer-ai-banner-label--incoming" : ""}`}
-                      >
-                        {autoReplyBannerLabel}
-                      </span>
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="composer-ai-banner-close"
-                    aria-label="Cancel AI thinking"
-                    onClick={handleDismissAutoReplyBanner}
-                    tabIndex={showAutoReplyBanner ? 0 : -1}
-                  >
-                    <xpl-icon icon="x" size="16"></xpl-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="composer-body-stack">
             <div className="composer-message-area">
               {isSuggesting ? (
                 <div
@@ -468,34 +520,49 @@ function MessageComposer({
 
 export default function App() {
   const [activePhase, setActivePhase] = useState("phase-1");
+  const [chatMessagePhase, setChatMessagePhase] = useState("phase-1");
 
   return (
     <main className="app-shell">
-      <section className="prototype-shell" aria-label="Message composer prototype">
-        <div
-          className="phase-segment-control"
-          role="tablist"
-          aria-label="Composer phases"
+      <p className="app-spec-title">Mariana Tek AI Inbox Spec</p>
+      <div className="app-prototypes-column">
+        <section
+          className="prototype-shell"
+          aria-labelledby="composer-section-title"
         >
-          {PHASE_OPTIONS.map((phase) => {
-            const isActive = phase.id === activePhase;
-            return (
-              <button
-                key={phase.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                className={`phase-segment-button${isActive ? " phase-segment-button--active" : ""}`}
-                onClick={() => setActivePhase(phase.id)}
-              >
-                {phase.label}
-              </button>
-            );
-          })}
-        </div>
+          <div className="prototype-shell-intro">
+            <h1 className="prototype-section-title" id="composer-section-title">
+              Message Composer
+            </h1>
+            <PhaseSegmentControl
+              value={activePhase}
+              onChange={setActivePhase}
+              ariaLabel="Composer phases"
+            />
+          </div>
 
-        <MessageComposer key={activePhase} phase={activePhase} />
-      </section>
+          <MessageComposer key={activePhase} phase={activePhase} />
+        </section>
+
+        <section
+          className="prototype-shell"
+          aria-labelledby="chat-message-section-title"
+        >
+          <div className="prototype-shell-intro">
+            <h1 className="prototype-section-title" id="chat-message-section-title">
+              Chat Message
+            </h1>
+            <PhaseSegmentControl
+              value={chatMessagePhase}
+              onChange={setChatMessagePhase}
+              ariaLabel="Chat message phases"
+            />
+          </div>
+
+          <ChatMessagePrototype key={chatMessagePhase} phase={chatMessagePhase} />
+        </section>
+      </div>
+      <p className="app-spec-footer-label">test figma-cursor spec template file</p>
     </main>
   );
 }
