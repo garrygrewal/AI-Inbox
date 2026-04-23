@@ -61,7 +61,6 @@ function ChatMessagePrototype({ phase }) {
   const aiMenuRef = useRef(null);
   const showAiAutoReplyMessage = phase === "phase-3";
   const aiMenuOptions = [
-    { icon: "copy", label: "Copy", useApolloIcon: true },
     { icon: "compose-2", label: "Draft Follow-up", useApolloIcon: true },
     { icon: AI_AUTO_REPLY_FEEDBACK_ICON, label: "Provide Feedback", useApolloIcon: false },
   ];
