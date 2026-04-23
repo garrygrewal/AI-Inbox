@@ -16,8 +16,14 @@ const RECEIVED_MESSAGE_SAMPLE =
   "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
 const SENT_MESSAGE_SAMPLE =
   "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
+const AI_AUTO_REPLY_MESSAGE_SAMPLE =
+  "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
 const AUTO_REPLY_BANNER_ICON =
-  "https://www.figma.com/api/mcp/asset/bb3a31a7-4230-4e27-a23e-d5bb80e82941";
+  "https://www.figma.com/api/mcp/asset/2b7f406c-e30b-4965-be82-1eecf9448fe4";
+const AI_AUTO_REPLY_META_ICON =
+  "https://www.figma.com/api/mcp/asset/e6893d0c-e99a-4a94-8b42-24a57d2ae0d8";
+const AI_AUTO_REPLY_FEEDBACK_ICON =
+  "https://www.figma.com/api/mcp/asset/c4d4b747-4bba-42a1-bca9-2f346280c0d2";
 const SUGGESTION_FEEDBACK_THUMBS_UP_ICON =
   "https://www.figma.com/api/mcp/asset/b9101bca-8c47-48d5-8d7d-be069f116a4e";
 const SUGGESTION_FEEDBACK_THUMBS_DOWN_ICON =
@@ -51,6 +57,43 @@ function PhaseSegmentControl({ value, onChange, ariaLabel }) {
 }
 
 function ChatMessagePrototype({ phase }) {
+  const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
+  const aiMenuRef = useRef(null);
+  const showAiAutoReplyMessage = phase === "phase-3";
+  const aiMenuOptions = [
+    { icon: "copy", label: "Copy", useApolloIcon: true },
+    { icon: "compose-2", label: "Draft Follow-up", useApolloIcon: true },
+    { icon: AI_AUTO_REPLY_FEEDBACK_ICON, label: "Provide Feedback", useApolloIcon: false },
+  ];
+
+  useEffect(() => {
+    if (!showAiAutoReplyMessage) {
+      setIsAiMenuOpen(false);
+    }
+  }, [showAiAutoReplyMessage]);
+
+  useEffect(() => {
+    if (!isAiMenuOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!aiMenuRef.current?.contains(event.target)) {
+        setIsAiMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsAiMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAiMenuOpen]);
+
   return (
     <div
       className="chat-message-prototype"
@@ -71,6 +114,62 @@ function ChatMessagePrototype({ phase }) {
             Delivered • Sent by Garry • 10:12 AM
           </p>
         </div>
+        {showAiAutoReplyMessage ? (
+          <div className="chat-message chat-message--sent chat-message--ai-auto-reply">
+            <div className="chat-message-action-row">
+              <div className="chat-message-action-control" ref={aiMenuRef}>
+                <button
+                  type="button"
+                  className={`chat-message-menu-trigger${isAiMenuOpen ? " chat-message-menu-trigger--open" : ""}`}
+                  aria-label="Open AI auto-reply message actions"
+                  aria-expanded={isAiMenuOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setIsAiMenuOpen((isOpen) => !isOpen)}
+                >
+                  <xpl-icon icon="dots-vertical" size="16"></xpl-icon>
+                </button>
+                {isAiMenuOpen ? (
+                  <div className="chat-message-menu" role="menu">
+                    {aiMenuOptions.map((option) => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        className="chat-message-menu-item"
+                        role="menuitem"
+                        onClick={() => setIsAiMenuOpen(false)}
+                      >
+                        {option.useApolloIcon ? (
+                          <xpl-icon
+                            className="chat-message-menu-icon"
+                            icon={option.icon}
+                            size="20"
+                          ></xpl-icon>
+                        ) : (
+                          <img
+                            className="chat-message-menu-icon chat-message-menu-icon--img"
+                            src={option.icon}
+                            alt=""
+                          />
+                        )}
+                        <span>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <div className="chat-message-action-main">
+                <div className="chat-message-bubble chat-message-bubble--ai-auto-reply">
+                  <p className="chat-message-text">{AI_AUTO_REPLY_MESSAGE_SAMPLE}</p>
+                </div>
+                <div className="chat-message-meta-row chat-message-meta-row--sent">
+                  <span>Delivered • Sent by AI</span>
+                  <img className="chat-message-meta-icon" src={AI_AUTO_REPLY_META_ICON} alt="" />
+                  <span>• 9:47 AM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
