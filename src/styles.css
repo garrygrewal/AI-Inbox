@@ -107,6 +107,20 @@ textarea {
   min-height: 220px;
 }
 
+.chat-message-prototype-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.chat-message-phase-note {
+  margin: 0;
+  color: var(--apollo-text-subdued);
+  font-size: 12px;
+  line-height: 16px;
+}
+
 .chat-message-thread {
   display: flex;
   flex-direction: column;

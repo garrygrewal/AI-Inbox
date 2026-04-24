@@ -59,6 +59,7 @@ function PhaseSegmentControl({ value, onChange, ariaLabel }) {
 function ChatMessagePrototype({ phase }) {
   const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   const aiMenuRef = useRef(null);
+  const showPhaseTwoNote = phase === "phase-2";
   const showAiAutoReplyMessage = phase === "phase-3";
   const aiMenuOptions = [
     { icon: "compose-2", label: "Draft Follow-up", useApolloIcon: true },
@@ -94,82 +95,87 @@ function ChatMessagePrototype({ phase }) {
   }, [isAiMenuOpen]);
 
   return (
-    <div
-      className="chat-message-prototype"
-      aria-label={`Chat message prototype ${PHASE_OPTIONS.find((p) => p.id === phase)?.label ?? phase}`}
-    >
-      <div className="chat-message-thread">
-        <div className="chat-message chat-message--received">
-          <div className="chat-message-bubble chat-message-bubble--received">
-            <p className="chat-message-text">{RECEIVED_MESSAGE_SAMPLE}</p>
+    <div className="chat-message-prototype-stack">
+      <div
+        className="chat-message-prototype"
+        aria-label={`Chat message prototype ${PHASE_OPTIONS.find((p) => p.id === phase)?.label ?? phase}`}
+      >
+        <div className="chat-message-thread">
+          <div className="chat-message chat-message--received">
+            <div className="chat-message-bubble chat-message-bubble--received">
+              <p className="chat-message-text">{RECEIVED_MESSAGE_SAMPLE}</p>
+            </div>
+            <p className="chat-message-timestamp">9:41 AM</p>
           </div>
-          <p className="chat-message-timestamp">9:41 AM</p>
-        </div>
-        <div className="chat-message chat-message--sent">
-          <div className="chat-message-bubble chat-message-bubble--sent">
-            <p className="chat-message-text chat-message-text--inverse">{SENT_MESSAGE_SAMPLE}</p>
+          <div className="chat-message chat-message--sent">
+            <div className="chat-message-bubble chat-message-bubble--sent">
+              <p className="chat-message-text chat-message-text--inverse">{SENT_MESSAGE_SAMPLE}</p>
+            </div>
+            <p className="chat-message-timestamp chat-message-timestamp--sent">
+              Delivered • Sent by Garry • 10:12 AM
+            </p>
           </div>
-          <p className="chat-message-timestamp chat-message-timestamp--sent">
-            Delivered • Sent by Garry • 10:12 AM
-          </p>
-        </div>
-        {showAiAutoReplyMessage ? (
-          <div className="chat-message chat-message--sent chat-message--ai-auto-reply">
-            <div className="chat-message-action-row">
-              <div className="chat-message-action-control" ref={aiMenuRef}>
-                <button
-                  type="button"
-                  className={`chat-message-menu-trigger${isAiMenuOpen ? " chat-message-menu-trigger--open" : ""}`}
-                  aria-label="Open AI auto-reply message actions"
-                  aria-expanded={isAiMenuOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setIsAiMenuOpen((isOpen) => !isOpen)}
-                >
-                  <xpl-icon icon="dots-vertical" size="16"></xpl-icon>
-                </button>
-                {isAiMenuOpen ? (
-                  <div className="chat-message-menu" role="menu">
-                    {aiMenuOptions.map((option) => (
-                      <button
-                        key={option.label}
-                        type="button"
-                        className="chat-message-menu-item"
-                        role="menuitem"
-                        onClick={() => setIsAiMenuOpen(false)}
-                      >
-                        {option.useApolloIcon ? (
-                          <xpl-icon
-                            className="chat-message-menu-icon"
-                            icon={option.icon}
-                            size="20"
-                          ></xpl-icon>
-                        ) : (
-                          <img
-                            className="chat-message-menu-icon chat-message-menu-icon--img"
-                            src={option.icon}
-                            alt=""
-                          />
-                        )}
-                        <span>{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              <div className="chat-message-action-main">
-                <div className="chat-message-bubble chat-message-bubble--ai-auto-reply">
-                  <p className="chat-message-text">{AI_AUTO_REPLY_MESSAGE_SAMPLE}</p>
+          {showAiAutoReplyMessage ? (
+            <div className="chat-message chat-message--sent chat-message--ai-auto-reply">
+              <div className="chat-message-action-row">
+                <div className="chat-message-action-control" ref={aiMenuRef}>
+                  <button
+                    type="button"
+                    className={`chat-message-menu-trigger${isAiMenuOpen ? " chat-message-menu-trigger--open" : ""}`}
+                    aria-label="Open AI auto-reply message actions"
+                    aria-expanded={isAiMenuOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setIsAiMenuOpen((isOpen) => !isOpen)}
+                  >
+                    <xpl-icon icon="dots-vertical" size="16"></xpl-icon>
+                  </button>
+                  {isAiMenuOpen ? (
+                    <div className="chat-message-menu" role="menu">
+                      {aiMenuOptions.map((option) => (
+                        <button
+                          key={option.label}
+                          type="button"
+                          className="chat-message-menu-item"
+                          role="menuitem"
+                          onClick={() => setIsAiMenuOpen(false)}
+                        >
+                          {option.useApolloIcon ? (
+                            <xpl-icon
+                              className="chat-message-menu-icon"
+                              icon={option.icon}
+                              size="20"
+                            ></xpl-icon>
+                          ) : (
+                            <img
+                              className="chat-message-menu-icon chat-message-menu-icon--img"
+                              src={option.icon}
+                              alt=""
+                            />
+                          )}
+                          <span>{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-                <div className="chat-message-meta-row chat-message-meta-row--sent">
-                  <span>Delivered • Sent by AI</span>
-                  <img className="chat-message-meta-icon" src={AI_AUTO_REPLY_META_ICON} alt="" />
-                  <span>• 9:47 AM</span>
+                <div className="chat-message-action-main">
+                  <div className="chat-message-bubble chat-message-bubble--ai-auto-reply">
+                    <p className="chat-message-text">{AI_AUTO_REPLY_MESSAGE_SAMPLE}</p>
+                  </div>
+                  <div className="chat-message-meta-row chat-message-meta-row--sent">
+                    <span>Delivered • Sent by AI</span>
+                    <img className="chat-message-meta-icon" src={AI_AUTO_REPLY_META_ICON} alt="" />
+                    <span>• 9:47 AM</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
+      {showPhaseTwoNote ? (
+        <p className="chat-message-phase-note">No changes from phase 1</p>
+      ) : null}
     </div>
   );
 }
