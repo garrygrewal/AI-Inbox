@@ -98,14 +98,6 @@ function ChatMessagePrototype({ phase }) {
             </div>
             <p className="chat-message-timestamp">9:41 AM</p>
           </div>
-          <div className="chat-message chat-message--sent">
-            <div className="chat-message-bubble chat-message-bubble--sent">
-              <p className="chat-message-text chat-message-text--inverse">{SENT_MESSAGE_SAMPLE}</p>
-            </div>
-            <p className="chat-message-timestamp chat-message-timestamp--sent">
-              Delivered • Sent by Garry • 10:12 AM
-            </p>
-          </div>
           {showAiAutoReplyMessage ? (
             <div className="chat-message chat-message--sent chat-message--ai-auto-reply">
               <div className="chat-message-action-row">
@@ -154,6 +146,14 @@ function ChatMessagePrototype({ phase }) {
               </div>
             </div>
           ) : null}
+          <div className="chat-message chat-message--sent">
+            <div className="chat-message-bubble chat-message-bubble--sent">
+              <p className="chat-message-text chat-message-text--inverse">{SENT_MESSAGE_SAMPLE}</p>
+            </div>
+            <p className="chat-message-timestamp chat-message-timestamp--sent">
+              Delivered • Sent by Garry • 10:12 AM
+            </p>
+          </div>
         </div>
       </div>
       {showPhaseTwoNote ? (
