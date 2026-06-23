@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ThumbsDownIcon, ThumbsUpIcon } from "./icons";
+import { ChatBotIcon, ThumbsDownIcon, ThumbsUpIcon } from "./icons";
 
 const MAX_COMPOSER_HEIGHT = 240;
 const COMPOSER_VERTICAL_PADDING = 32;
@@ -147,12 +147,7 @@ function ChatMessagePrototype({ phase }) {
                   </div>
                   <div className="chat-message-meta-row chat-message-meta-row--sent">
                     <span>Delivered • Sent by AI</span>
-                    <xpl-icon
-                      className="chat-message-meta-icon"
-                      icon="sparkle"
-                      size="12"
-                      aria-hidden="true"
-                    ></xpl-icon>
+                    <ChatBotIcon className="chat-message-meta-icon chat-message-meta-icon--ai" />
                     <span>• 9:47 AM</span>
                   </div>
                 </div>
@@ -464,12 +459,7 @@ function MessageComposer({
             role={showAutoReplyBanner ? "status" : undefined}
           >
             <div className="composer-ai-banner-copy">
-              <xpl-icon
-                className="composer-ai-banner-icon"
-                icon="sparkle"
-                size="16"
-                aria-hidden="true"
-              ></xpl-icon>
+              <ChatBotIcon className="composer-ai-banner-icon" />
               <span
                 className={`composer-ai-banner-label-stack${isAutoReplyBannerTransitioning ? " composer-ai-banner-label-stack--transitioning" : ""}`}
               >

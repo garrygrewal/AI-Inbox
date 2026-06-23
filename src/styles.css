@@ -240,12 +240,13 @@ textarea {
 }
 
 .chat-message-meta-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   flex: 0 0 auto;
-  color: var(--apollo-brand);
-  line-height: 0;
+}
+
+.chat-message-meta-icon--ai {
+  width: 12px;
+  height: 12px;
 }
 
 .chat-message-menu-trigger {
@@ -644,12 +645,10 @@ textarea {
 }
 
 .composer-ai-banner-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   flex: 0 0 auto;
-  color: var(--apollo-brand);
-  line-height: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .composer-ai-banner-copy {

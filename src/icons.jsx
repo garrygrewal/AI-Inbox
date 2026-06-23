@@ -1,3 +1,9 @@
+const CHAT_BOT_ICON_SRC = "/icons/chat-bot-fill-18.svg";
+
+export function ChatBotIcon({ className }) {
+  return <img className={className} src={CHAT_BOT_ICON_SRC} alt="" aria-hidden="true" />;
+}
+
 export function ThumbsUpIcon({ className }) {
   return (
     <svg
