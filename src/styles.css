@@ -240,9 +240,12 @@ textarea {
 }
 
 .chat-message-meta-icon {
-  display: block;
-  width: 12px;
-  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--apollo-brand);
+  line-height: 0;
 }
 
 .chat-message-menu-trigger {
@@ -317,12 +320,6 @@ textarea {
   justify-content: center;
   flex: 0 0 auto;
   line-height: 0;
-}
-
-.chat-message-menu-icon--img {
-  display: block;
-  width: 20px;
-  height: 20px;
 }
 
 .prototype-section-title {
@@ -449,6 +446,7 @@ textarea {
   display: block;
   width: 14px;
   height: 14px;
+  color: var(--apollo-text);
 }
 
 .phase-segment-control {
@@ -646,10 +644,12 @@ textarea {
 }
 
 .composer-ai-banner-icon {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
+  color: var(--apollo-brand);
+  line-height: 0;
 }
 
 .composer-ai-banner-copy {

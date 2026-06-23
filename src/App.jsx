@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ThumbsDownIcon, ThumbsUpIcon } from "./icons";
 
 const MAX_COMPOSER_HEIGHT = 240;
 const COMPOSER_VERTICAL_PADDING = 32;
@@ -18,16 +19,6 @@ const SENT_MESSAGE_SAMPLE =
   "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
 const AI_AUTO_REPLY_MESSAGE_SAMPLE =
   "Cupidatat enim tempor mollit reprehenderit ex anim aliquip fut labore irure officia labore excepteur amet velit fugiat dolore consequat adipisicing exercitation cillum non non tempor";
-const AUTO_REPLY_BANNER_ICON =
-  "https://www.figma.com/api/mcp/asset/2b7f406c-e30b-4965-be82-1eecf9448fe4";
-const AI_AUTO_REPLY_META_ICON =
-  "https://www.figma.com/api/mcp/asset/e6893d0c-e99a-4a94-8b42-24a57d2ae0d8";
-const AI_AUTO_REPLY_FEEDBACK_ICON =
-  "https://www.figma.com/api/mcp/asset/c4d4b747-4bba-42a1-bca9-2f346280c0d2";
-const SUGGESTION_FEEDBACK_THUMBS_UP_ICON =
-  "https://www.figma.com/api/mcp/asset/b9101bca-8c47-48d5-8d7d-be069f116a4e";
-const SUGGESTION_FEEDBACK_THUMBS_DOWN_ICON =
-  "https://www.figma.com/api/mcp/asset/ef45e002-507c-4480-add7-6407a8a506b5";
 const PHASE_OPTIONS = [
   { id: "phase-1", label: "Phase 1" },
   { id: "phase-2", label: "Phase 2" },
@@ -62,8 +53,8 @@ function ChatMessagePrototype({ phase }) {
   const showPhaseTwoNote = phase === "phase-2";
   const showAiAutoReplyMessage = phase === "phase-3";
   const aiMenuOptions = [
-    { icon: "compose-2", label: "Draft Follow-up", useApolloIcon: true },
-    { icon: AI_AUTO_REPLY_FEEDBACK_ICON, label: "Provide Feedback", useApolloIcon: false },
+    { icon: "compose-2", label: "Draft Follow-up" },
+    { icon: "review", label: "Provide Feedback" },
   ];
 
   useEffect(() => {
@@ -139,19 +130,11 @@ function ChatMessagePrototype({ phase }) {
                           role="menuitem"
                           onClick={() => setIsAiMenuOpen(false)}
                         >
-                          {option.useApolloIcon ? (
-                            <xpl-icon
-                              className="chat-message-menu-icon"
-                              icon={option.icon}
-                              size="20"
-                            ></xpl-icon>
-                          ) : (
-                            <img
-                              className="chat-message-menu-icon chat-message-menu-icon--img"
-                              src={option.icon}
-                              alt=""
-                            />
-                          )}
+                          <xpl-icon
+                            className="chat-message-menu-icon"
+                            icon={option.icon}
+                            size="20"
+                          ></xpl-icon>
                           <span>{option.label}</span>
                         </button>
                       ))}
@@ -164,7 +147,12 @@ function ChatMessagePrototype({ phase }) {
                   </div>
                   <div className="chat-message-meta-row chat-message-meta-row--sent">
                     <span>Delivered • Sent by AI</span>
-                    <img className="chat-message-meta-icon" src={AI_AUTO_REPLY_META_ICON} alt="" />
+                    <xpl-icon
+                      className="chat-message-meta-icon"
+                      icon="sparkle"
+                      size="12"
+                      aria-hidden="true"
+                    ></xpl-icon>
                     <span>• 9:47 AM</span>
                   </div>
                 </div>
@@ -452,11 +440,7 @@ function MessageComposer({
               aria-label="Thumbs up suggested message"
               tabIndex={showSuggestionFeedback ? 0 : -1}
             >
-              <img
-                className="composer-suggestion-feedback-icon"
-                src={SUGGESTION_FEEDBACK_THUMBS_UP_ICON}
-                alt=""
-              />
+              <ThumbsUpIcon className="composer-suggestion-feedback-icon" />
             </button>
             <button
               type="button"
@@ -464,11 +448,7 @@ function MessageComposer({
               aria-label="Thumbs down suggested message"
               tabIndex={showSuggestionFeedback ? 0 : -1}
             >
-              <img
-                className="composer-suggestion-feedback-icon"
-                src={SUGGESTION_FEEDBACK_THUMBS_DOWN_ICON}
-                alt=""
-              />
+              <ThumbsDownIcon className="composer-suggestion-feedback-icon" />
             </button>
           </div>
         </div>
@@ -484,11 +464,12 @@ function MessageComposer({
             role={showAutoReplyBanner ? "status" : undefined}
           >
             <div className="composer-ai-banner-copy">
-              <img
+              <xpl-icon
                 className="composer-ai-banner-icon"
-                src={AUTO_REPLY_BANNER_ICON}
-                alt=""
-              />
+                icon="sparkle"
+                size="16"
+                aria-hidden="true"
+              ></xpl-icon>
               <span
                 className={`composer-ai-banner-label-stack${isAutoReplyBannerTransitioning ? " composer-ai-banner-label-stack--transitioning" : ""}`}
               >
